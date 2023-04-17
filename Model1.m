@@ -30,6 +30,19 @@ T_t0_l = 365.15+100; %K
 [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
 plot(t,y)
 
+function h = heat_transfer(p, function_flag)
+    
+    % function_flag: 1 för enbart toppen av cylindern, 2 för sidan av cylindern
+    
+    if function_flag == 1 
+        h = 0.6 * (9.82 * 2.1 * 10^-4 * (p.T_area - p.T_air))^(1/4)*p.A_top_l/4;
+    elseif function_flag == 2
+        h = 0.6 * (9.82 * 2.1 * 10^-4 * (p.T_area - p.T_air))^(1/4)*p.A_top_l^2/4*p.height;
+    else
+        error('Ogiltlig function_flag: välj antingen 1 eller 2');
+    end
+end
+
 function dTdt = derivate(p,T_l)
     %h_l2air = 0.6*(9.82*beta * (T_surface-T_air))^(1/4)*
     %h_cup2air=0.6;
