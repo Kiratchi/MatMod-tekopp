@@ -36,18 +36,26 @@ T_t0_l = 365.15+100; %K
 [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
 plot(t,y)
 
-function h = heat_transfer(p, function_flag)
-    
-    % function_flag: 1 för enbart toppen av cylindern, 2 för sidan av cylindern
-    
-    if function_flag == 1 
-        h = 0.6 * (9.82 * 2.1 * 10^-4 * (p.T_area - p.T_air))^(1/4)*p.A_top_l/4;
-    elseif function_flag == 2
-        h = 0.6 * (9.82 * 2.1 * 10^-4 * (p.T_area - p.T_air))^(1/4)*p.A_top_l^2/4*p.height;
-    else
-        error('Ogiltlig function_flag: välj antingen 1 eller 2');
-    end
-end
+
+   
+function h_l2cup = h_l2cup(p,T_inner, T_outside, C_L)
+    % C_L is the characteristic length which in this case will be height to
+    % which the water reaches in the container
+    T_film = (T_inner + T_outside)/2
+    Pr_water1 =  50000/(T^2 + 155* T + 3700); % källa https://www.tec-science.com/mechanics/gases-and-liquids/prandtl-number/
+
+    konst_A=1.522; konst_B=243; my_water = konst_A*exp(konst_B/T_film)
+
+    ny_water= my_water/rho_water 
+
+    Ra_L = pr_water(T_film) * g * (1 / T_Abs) * (T_outside - T_inner) * C_L^3 / (ny_water)^2;
+        
+    Nu_L = 0.68 + 0.663*Ra_L^1/4/(1+(0.492/Pr_water1)^9/16)^4/9 % om Ra_L <= 10^8
+        
+    h_l2cup = (k_water(T_film) / C_L) * Nu_L
+end 
+        
+
 
 function dTdt = derivate(p,T_l)
     h_l2air = 0.6; %Fixa utryck
