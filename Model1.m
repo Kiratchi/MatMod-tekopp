@@ -7,6 +7,12 @@ clc, clear, clf
 p.T_air = 365.15+20.6; %K
 p.C_p_l = 4.18;   %Heat capacity water J/kg/K 
 
+% Radiation properies
+p.sftboltz_const = 6.676*10^-8 %W/m^2 K^4 (Transportenboken)
+p.emissitivity_glass = 0.94
+p.emissitivity_l = 0.97    %https://journals.ametsoc.org/view/journals/apme/11/8/1520-0450_1972_011_1391_ldowse_2_0_co_2.xml
+
+
 % Transfer coefficents
 p.k_glass = 0.9; %J/smK
 
@@ -23,7 +29,7 @@ p.volume_l = 250 *10^(-6); %m^3
 
 p.density_l = 997; %kg/m^3
 
-tspan = [0 200];
+tspan = [0 100];
 T_t0_l = 365.15+100; %K
 
 
@@ -44,16 +50,31 @@ function h = heat_transfer(p, function_flag)
 end
 
 function dTdt = derivate(p,T_l)
-    %h_l2air = 0.6*(9.82*beta * (T_surface-T_air))^(1/4)*
-    %h_cup2air=0.6;
-    h_l2air = 0.6
-    h_cup2air = 0.6
+    h_l2air = 0.6; %Fixa utryck
+    h_cup2air = 0.6; %Fixa utryck
+    
+    h_l2cup = 0; %Fixa utryck
+    h_l2surf = 0; %Fixa utryck
 
-    T_cup = (p.A_side_ln*p.k_glass*T_l + p.A_side_glass*h_cup2air*p.T_air)...
-        /(p.A_side_ln*p.k_glass + p.A_side_glass*h_cup2air);
+    %R_l2glass = (p.A_side_l*h_l2glass)^-1;
+    R_l2glass = 0 %Tilfäligt tills vi har h_l2glass
+    R_glass =  p.thickness_glass/p.A_side_ln*p.k_glass;
+    R_glass2air = (p.A_side_glass*h_cup2air)^-1;
+    
+    %R_l2surf = (p.A_side_l*h_l2surf)^-1;
+    R_l2surf = 0 %Tillfälligt tills vi har h_l2surf
+    R_surf2air = (p.A_top_l*h_l2air)^-1;
 
-    dQdt_side = p.A_side_ln*p.k_glass*(T_l-T_cup);
-     dQdt_top = p.A_top_l*h_l2air*(T_l-p.T_air);
-    dTdt = -1/(p.C_p_l*p.density_l*p.volume_l)*(dQdt_top + dQdt_side);
+
+    T_surf_cup = (T_l*R_glass^-1 + p.T_air*R_glass2air^-1) / (R_glass^-1 + R_glass2air^-1); 
+    T_surf_l = T_l;
+
+    dQdt_side = (T_l-p.T_air)/(R_l2glass + R_glass + R_glass2air)
+    dQdt_top = (T_l-p.T_air)/(R_l2surf + R_surf2air)
+
+    dQdt_rad_side = p.A_side_glass*p.emissitivity_l*p.sftboltz_const*(T_surf_cup^4-p.T_air^4);  
+    dQdt_rad_top = p.A_top_l*p.emissitivity_glass*p.sftboltz_const*(T_surf_l^4-p.T_air^4);
+
+    dTdt = -1/(p.C_p_l*p.density_l*p.volume_l)*(dQdt_top + dQdt_side + dQdt_rad_top + dQdt_rad_side);
     
 end
