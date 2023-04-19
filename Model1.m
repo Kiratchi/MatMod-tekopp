@@ -39,6 +39,27 @@ T_t0_l = 365.15+100; %K
 [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
 plot(t,y)
 
+
+   
+function h_l2cup = h_l2cup(p,T_inner, T_outside, C_L)
+    % C_L is the characteristic length which in this case will be height to
+    % which the water reaches in the container
+    T_film = (T_inner + T_outside)/2
+    Pr_water =  50000/(T_film + 155*T_film + 3700); % källa https://www.tec-science.com/mechanics/gases-and-liquids/prandtl-number/
+
+    konst_A=1.522; konst_B=243; my_water = konst_A*exp(konst_B/T_film)
+
+    ny_water= my_water/rho_water 
+
+    Ra_L = Pr_water * g * (1 / T_Abs) * (T_outside - T_inner) * C_L^3 / (ny_water)^2;
+        
+    Nu_L = 0.68 + 0.663*Ra_L^1/4/(1+(0.492/Pr_water)^9/16)^4/9 % om Ra_L <= 10^8
+        
+    h_l2cup = (k_water(T_film) / C_L) * Nu_L
+end 
+        
+
+
 function dTdt = derivate(p,T_l)
 
 
