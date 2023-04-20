@@ -21,11 +21,11 @@ p.T_air = 365.15+20.6; %K
 p.C_p_l = 4.18;   %Heat capacity water J/kg/K 
 
 % Radiation properies
-p.sftboltz_const = 6.676*10^-8 %W/m^2 K^4 (Transportenboken)
-p.emissitivity_glass = 0.94
-p.emissitivity_l = 0.97    %https://journals.ametsoc.org/view/journals/apme/11/8/1520-0450_1972_011_1391_ldowse_2_0_co_2.xml
-p.rad_glass_const= p.A_top_l*p.emissitivity_glass*p.sftboltz_const
-p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const
+p.sftboltz_const = 6.676*10^-8; %W/m^2 K^4 (Transportenboken)
+p.emissitivity_glass = 0.94;
+p.emissitivity_l = 0.97 ;   %https://journals.ametsoc.org/view/journals/apme/11/8/1520-0450_1972_011_1391_ldowse_2_0_co_2.xml
+p.rad_glass_const= p.A_top_l*p.emissitivity_glass*p.sftboltz_const;
+p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 
 % Transfer coefficents
 p.k_glass = 0.9; %J/smK
@@ -55,12 +55,13 @@ function dTdt = derivate(p,T_l)
     T_top = fminsearch(min_top,T_top_0);
 
 
-    
-    h_l2top = 0.6; %Fixa utryck
+    C_innerdiam = 2*p.r_inner; % karaktäristisk diameter 
+    h_l2top = calc_h_l2top(T_top,T_l,C_innerdiam); %Fixa utryck
     R_l2top = (p.A_side_l*h_l2top)^-1;
     q_l2top = (T_l - T_top)/R_l2top;
 
-    h_l2cup = 0.6; %Fixa utryck
+    C_L = p.height; % karaktäristisk längd 
+    h_l2cup = calc_h_l2cup(T_in_cup, T_out_cup,C_L); %Fixa utryck
     R_l2glass = (p.A_side_l*h_l2cup)^-1;
     q_l2glass = (T_l - T_in_cup)/R_l2glass;
 
@@ -70,8 +71,10 @@ function dTdt = derivate(p,T_l)
 end
 
 function f = costfunc_top_flow(p,T_l, T_top)
-    h_l2air = 0.6; %Fixa utryck
-    h_l2top = 0.6; %Fixa utryck
+    C_innerdiam = 2*p.r_inner; % karaktäristisk diameter 
+    h_l2air = calc_h_l2air(T_top,C_innerdiam); %Fixa utryck
+    
+    h_l2top = calc_h_l2top(T_top, T_l, C_innerdiam); %Fixa utryck
 
     R_l2top = (p.A_side_l*h_l2top)^-1;
     R_top2air = (p.A_top_l*h_l2air)^-1;
@@ -84,8 +87,10 @@ function f = costfunc_top_flow(p,T_l, T_top)
 end
 
 function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
-    h_l2cup = 0.6; %Fixa utryck
-    h_cup2air = 0.6; %Fixa utryck
+    C_L = p.height; % karaktäristisk längd 
+    h_l2cup = calc_h_l2cup(T_in_cup, T_out_cup,C_L);
+
+    h_cup2air = calc_h_cup2air(T_out_cup, C_L);
     
     R_l2glass = (p.A_side_l*h_l2cup)^-1;
     R_glass =  p.thickness_glass/p.A_side_ln*p.k_glass;
@@ -98,4 +103,9 @@ function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
 
     f = (q_rad_side + q_glass2air - q_glass)^2 + (q_l2glass - q_glass)^2;
 end
+
+
+
+
+
 
