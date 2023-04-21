@@ -31,12 +31,17 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-tspan = [0 100];
+tspan = [0 4000];
 T_t0_l = 365.15+100; %K
 
 
 [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
-plot(t,y)
+T = y-365.15;
+plot(t,T)
+xlabel("Time (s)")
+ylabel(" Temp (C)")
+T(end)
+
 
 function dTdt = derivate(p,T_l)
 
@@ -67,7 +72,6 @@ function dTdt = derivate(p,T_l)
 
 
     dTdt = -1/(p.C_p_l*p.density_l*p.volume_l)*(q_l2top + q_l2glass);
-
 end
 
 function f = costfunc_top_flow(p,T_l, T_top)
