@@ -34,13 +34,28 @@ p.k_glass = 0.9; %J/smK
 tspan = [0 4000];
 T_t0_l = 273.15+100; %K
 
+% 
+% [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
+% T = y-273.15;
+% plot(t,T)
+% xlabel("Time (s)")
+% ylabel(" Temp (C)")
+% T(end)
 
-[t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
-T = y-273.15;
-plot(t,T)
-xlabel("Time (s)")
-ylabel(" Temp (C)")
-T(end)
+
+%derivate(p,273.15+100);
+
+T_l_vector = linspace(p.T_air, 373.15,10);
+T_in_cup_vector = [];
+T_out_cup_vector= [];
+for T_l = T_l_vector
+    [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
+    T_in_cup_vector = [T_in_cup_vector, T_in_cup];
+    T_out_cup_vector = [T_out_cup_vector, T_out_cup];
+end
+plot(T_l_vector-273.15, T_in_cup_vector-273.15,'-b','linewidth', 2)
+hold on 
+plot(T_l_vector-273.15, T_out_cup_vector-273.15,'--r','LineWidth',2)
 
 
 function dTdt = derivate(p,T_l)
@@ -48,18 +63,13 @@ function dTdt = derivate(p,T_l)
 
     %T_out_cup = (T_l*R_glass^-1 + p.T_air*R_glass2air^-1) / (R_glass^-1 + R_glass2air^-1); 
     %T_surf_l = T_l;
+    [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
+    disp(T_in_cup-273.15)
+    disp(T_out_cup-273.15)
 
-    T_0s = [273.15+80, 273.15+80]; %Fixa bättre initialgissning
-    min_side = @(x) costfunc_side_flow(p,T_l, x(1), x(2));
-    x = fminsearch(min_side,T_0s);
-    T_in_cup = x(1);
-    T_out_cup= x(2);
-  
     T_top_0 = 273.15+80; %Fixa bättre initialgissning
-    A=[];
-    b=[];
     min_top = @(x) costfunc_top_flow(p,T_l, x);
-    T_top = fmincon(min_top,T_top_0,A,b,273.15+20.6,273.15+100);
+    T_top = fmincon(min_top,T_top_0,[],[],[],[],273.15+20.6,273.15+100);
 
 
     C_innerdiam = 2*p.r_inner; % karaktäristisk diameter 
@@ -74,6 +84,22 @@ function dTdt = derivate(p,T_l)
 
 
     dTdt = -1/(p.C_p_l*p.density_l*p.volume_l)*(q_l2top + q_l2glass);
+end
+
+function [T_in_cup, T_out_cup] = t_finder_side(p,T_l)
+    f_best=100000;
+    options = optimoptions('fmincon','Display', 'off');
+    min_side = @(x) costfunc_side_flow(p,T_l, x(1), x(2));
+    for T_0 = linspace(p.T_air, T_l,100) 
+        T_0s = T_0*ones(1,2); %Fixa bättre initialgissning
+        [x,f_val] = fmincon(min_side,T_0s,[],[],[],[],[273.15+20.6 273.15+20.6],[273.15+100 273.15+100],[],options);
+        if f_val < f_best
+            f_best = f_val;
+            T_in_cup = x(1);
+            T_out_cup= x(2);
+        end
+    end
+    display(f_best)
 end
 
 function f = costfunc_top_flow(p,T_l, T_top)
