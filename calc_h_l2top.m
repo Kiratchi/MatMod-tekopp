@@ -14,10 +14,12 @@ function R_hl2top = calc_h_l2top(T_top,T_l,C_innerdiam)
         R_hl2top = (k_water / (C_innerdiam/4))*Nu_L;
      elseif (Ra_L >= 10^4) && (Ra_L <= 10^7)
          Nu_L = 0.54 * Ra_L^(1/4);
-         R_hl2top = (k_water / (C_innerdiam/4));
+         R_hl2top = (k_water / (C_innerdiam/4)) * Nu_L;
      else
-        warning('korrelationen håller ej för då Ra_L är för stor eller liten')
-        R_hl2top = 1;
+        %warning('korrelationen håller ej för då Ra_L är för stor eller liten')
+        Ra_L = 10^6;
+        Nu_L = 0.54 * Ra_L^(1/4);
+        R_hl2top = (k_water / (C_innerdiam/4))*Nu_L;
      end
 end 
 

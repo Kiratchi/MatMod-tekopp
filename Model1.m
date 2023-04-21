@@ -17,7 +17,7 @@ p.volume_l = 250 *10^(-6); %m^3
 p.density_l = 997; %kg/m^3
 
 % Teperature properties
-p.T_air = 365.15+20.6; %K
+p.T_air = 273.15+20.6; %K
 p.C_p_l = 4.18;   %Heat capacity water J/kg/K 
 
 % Radiation properies
@@ -32,11 +32,11 @@ p.k_glass = 0.9; %J/smK
 
 
 tspan = [0 4000];
-T_t0_l = 365.15+100; %K
+T_t0_l = 273.15+100; %K
 
 
 [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
-T = y-365.15;
+T = y-273.15;
 plot(t,T)
 xlabel("Time (s)")
 ylabel(" Temp (C)")
@@ -49,15 +49,17 @@ function dTdt = derivate(p,T_l)
     %T_out_cup = (T_l*R_glass^-1 + p.T_air*R_glass2air^-1) / (R_glass^-1 + R_glass2air^-1); 
     %T_surf_l = T_l;
 
-    T_0s = [100, 200]; %Fixa bättre initialgissning
+    T_0s = [273.15+80, 273.15+80]; %Fixa bättre initialgissning
     min_side = @(x) costfunc_side_flow(p,T_l, x(1), x(2));
     x = fminsearch(min_side,T_0s);
     T_in_cup = x(1);
     T_out_cup= x(2);
   
-    T_top_0 = 100; %Fixa bättre initialgissning
+    T_top_0 = 273.15+80; %Fixa bättre initialgissning
+    A=[];
+    b=[];
     min_top = @(x) costfunc_top_flow(p,T_l, x);
-    T_top = fminsearch(min_top,T_top_0);
+    T_top = fmincon(min_top,T_top_0,A,b,273.15+20.6,273.15+100);
 
 
     C_innerdiam = 2*p.r_inner; % karaktäristisk diameter 
