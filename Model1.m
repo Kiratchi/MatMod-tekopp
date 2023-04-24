@@ -45,21 +45,21 @@ T_t0_l = 273.15+100; %K
 
 %derivate(p,273.15+100);
 
-T_l_vector = linspace(p.T_air, 373.15,10);
-T_in_cup_vector = [];
-T_out_cup_vector= [];
-for T_l = T_l_vector
-    [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
-    T_in_cup_vector = [T_in_cup_vector, T_in_cup];
-    T_out_cup_vector = [T_out_cup_vector, T_out_cup];
-end
-plot(T_l_vector-273.15, T_in_cup_vector-273.15,'-b','linewidth', 2)
-hold on 
-plot(T_l_vector-273.15, T_out_cup_vector-273.15,'--r','LineWidth',2)
+% T_l_vector = linspace(p.T_air, 373.15,10);
+% T_in_cup_vector = [];
+% T_out_cup_vector= [];
+% for T_l = T_l_vector
+%     [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
+%     T_in_cup_vector = [T_in_cup_vector, T_in_cup];
+%     T_out_cup_vector = [T_out_cup_vector, T_out_cup];
+% end
+% plot(T_l_vector-273.15, T_in_cup_vector-273.15,'-b','linewidth', 2)
+% hold on 
+% plot(T_l_vector-273.15, T_out_cup_vector-273.15,'--r','LineWidth',2)
 
+t_finder_side(p, p.T_air+5)
 
 function dTdt = derivate(p,T_l)
-
 
     %T_out_cup = (T_l*R_glass^-1 + p.T_air*R_glass2air^-1) / (R_glass^-1 + R_glass2air^-1); 
     %T_surf_l = T_l;
@@ -90,16 +90,27 @@ function [T_in_cup, T_out_cup] = t_finder_side(p,T_l)
     f_best=100000;
     options = optimoptions('fmincon','Display', 'off');
     min_side = @(x) costfunc_side_flow(p,T_l, x(1), x(2));
-    for T_0 = linspace(p.T_air, T_l,100) 
+    f_val_vector = [];
+    T_cup_vector = [];
+    for T_0 = linspace(p.T_air, (T_l+373.15)/2,100) 
         T_0s = T_0*ones(1,2); %Fixa bättre initialgissning
         [x,f_val] = fmincon(min_side,T_0s,[],[],[],[],[273.15+20.6 273.15+20.6],[273.15+100 273.15+100],[],options);
         if f_val < f_best
             f_best = f_val;
+
             T_in_cup = x(1);
             T_out_cup= x(2);
         end
+        f_val_vector = [f_val_vector, f_val];
+        T_cup_vector = [T_cup_vector; x];
     end
     display(f_best)
+    [T_cup_vector,I] = sort(T_cup_vector);
+    f_val_vector = f_val_vector(I);
+    plot(T_cup_vector-273.15, log(f_val_vector))
+    xlabel("T_{cup}")
+    ylabel("log(f_{value})")
+
 end
 
 function f = costfunc_top_flow(p,T_l, T_top)
