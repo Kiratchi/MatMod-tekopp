@@ -5,7 +5,7 @@ clc, clear, clf
 
 % Physical dimensions
 p.r_inner = 7 *10^(-2); %m
-p.thickness_glass = 0.005; %m
+p.thickness_glass = 0.5; %m
 p.r_outer = p.r_inner + p.thickness_glass; %m
 p.height = 9.5*10^(-2); %m
 p.A_side_l= 2*pi*p.r_inner*p.height; %m^2
@@ -44,7 +44,7 @@ p.k_glass = 0.9; %J/smK
 % T(end)
 % 
 % subplot(2,2,3)
-plot_side_temp(p,p.T_air+10, 273.15+80)
+plot_side_temp(p,p.T_air+10, 273.15+100)
 % subplot(2,2,4)
 % plot_top_temp(p,p.T_air, 273.15+100)
 
@@ -63,7 +63,7 @@ function dTdt = derivate(p,T_l)
     q_l2top = (T_l - T_top)/R_l2top;
 
     C_L = p.height; % karaktäristisk längd 
-    h_l2cup = calc_h_l2cup(T_in_cup, T_out_cup,C_L); %Fixa utryck
+    h_l2cup = calc_h_l2cup(T_in_cup, T_l,C_L); %Fixa utryck
     R_l2glass = (p.A_side_l*h_l2cup)^-1;
     q_l2glass = (T_l - T_in_cup)/R_l2glass;
 
@@ -90,7 +90,7 @@ end
 
 function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
     C_L = p.height; % karaktäristisk längd 
-    h_l2cup = calc_h_l2cup(T_in_cup, T_out_cup,C_L);
+    h_l2cup = calc_h_l2cup(T_in_cup, T_l,C_L);
 
     h_cup2air = calc_h_cup2air(T_out_cup, C_L);
     
