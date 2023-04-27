@@ -11,13 +11,18 @@ function R_hl2top = calc_h_l2top(T_top,T_l,C_innerdiam)
     D=-3.376*10^-5; %1/K^2 
     my_water = A*exp(B/T_film + C*T_film +D*T_film^2);
 
+    k_watercalc=zeros(1,length(T_film));
+    for i=1:length(T_film)
+        k_watercalc(1,i)=k_water(round(T_film(1,i)));
+    end 
+
 
     rho_water = 1000; % kg/m^3
     k_water = 0.598; % W / m K vid 20'C
     ny_water = my_water / rho_water;
     %Pr_water = 50000/(T_film^2 + 155* T_film + 3700);
     Cp_water = 4180; % J / kg K
-    Pr_water = (my_water*Cp_water)/k_water(T_film);
+    Pr_water = (my_water*Cp_water)/k_watercalc;
 
     % beta_water = 0.000207; % 1/K vid 20'C kan behöva använda istället för 1/T_l nedan
 
