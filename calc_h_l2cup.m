@@ -27,7 +27,7 @@ function R_h_l2cup = calc_h_l2cup(T_in_cup, T_out_cup, C_L)
     
     Nu_L = 0.68 + 0.663*Ra_L^1/4/(1+(0.492/Pr_water)^(9/16))^(4/9); % om Ra_L <= 10^8
     
-    R_h_l2cup = (k_water / C_L) * Nu_L;
+    R_h_l2cup = (k_water(T_film) / C_L) * Nu_L;
 end 
 
 
