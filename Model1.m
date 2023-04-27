@@ -14,11 +14,9 @@ p.A_side_glass = 2*pi*p.r_outer*p.height; %m^2
 p.A_top_l = pi*p.r_inner^2; %m^2
 p.volume_l = 250 *10^(-6); %m^3 
 
-p.density_l = 997; %kg/m^3
 
 % Teperature properties
 p.T_air = 273.15+20.6; %K
-p.C_p_l = 4.18*1000;   %Heat capacity water J/kg/K 
 
 % Radiation properies
 p.sftboltz_const = 6.676*10^-8; %W/m^2 K^4 (Transportenboken)
@@ -31,16 +29,16 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-tspan = [0 6000]; % in s
+tspan = [0 2500]; % in s
 T_t0_l = 273.15+100; %K 
 [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
 T = y-273.15;
 subplot(2,2,[1,2])
-plot(t./60, T, 'b','LineWidth',1.5)
 hold on
-plot(t./60, 0*t+p.T_air-273.15, 'b--')
-axis([0 tspan(2)/60 0 100])
-xlabel("Time (min)")
+plot(t, T, 'b','LineWidth',1.5)
+plot(t, 0*t+p.T_air-273.15, 'b--')
+axis([tspan 0 100])
+xlabel("Time (s)")
 ylabel(" T (C)")
 title("Solution over time")
 T(end)
@@ -69,7 +67,7 @@ function dTdt = derivate(p,T_l)
     q_l2glass = (T_l - T_in_cup)/R_l2glass;
 
 
-    dTdt = -1/(p.C_p_l*p.density_l*p.volume_l)*(q_l2top + q_l2glass);
+    dTdt = -1/(p.cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top + q_l2glass);
 end
 
 
