@@ -13,7 +13,7 @@ function R_hl2top = calc_h_l2top(T_top,T_l,C_innerdiam)
 
 
     rho_water = 1000; % kg/m^3
-    k_water = 0.598; % W / m K vid 20'C
+    %k_water = 0.598; % W / m K vid 20'C
     ny_water = my_water / rho_water;
     %Pr_water = 50000/(T_film^2 + 155* T_film + 3700);
     Cp_water = 4180; % J / kg K
@@ -24,15 +24,15 @@ function R_hl2top = calc_h_l2top(T_top,T_l,C_innerdiam)
     Ra_L = g * Pr_water * 1/T_l * (T_l - T_top) * (C_innerdiam/4)^3 / (ny_water^2); % vanligtvis C_L^3 men C_L = A/O= pi r^2/(pi d) => d/4 ty (d/4)^3
      if (Ra_L >= 10^7) && (Ra_L <= 10^11)
         Nu_L = 0.15 * Ra_L^(1/3);
-        R_hl2top = (k_water / (C_innerdiam/4))*Nu_L;
+        R_hl2top = (k_water(T_film) / (C_innerdiam/4))*Nu_L;
      elseif (Ra_L >= 10^4) && (Ra_L <= 10^7)
          Nu_L = 0.54 * Ra_L^(1/4);
-         R_hl2top = (k_water / (C_innerdiam/4)) * Nu_L;
+         R_hl2top = (k_water(T_film) / (C_innerdiam/4)) * Nu_L;
      else
         %warning('korrelationen håller ej för då Ra_L är för stor eller liten')
         Ra_L = 10^6;
         Nu_L = 0.54 * Ra_L^(1/4);
-        R_hl2top = (k_water / (C_innerdiam/4))*Nu_L;
+        R_hl2top = (k_water(T_film) / (C_innerdiam/4))*Nu_L;
      end
 end 
 

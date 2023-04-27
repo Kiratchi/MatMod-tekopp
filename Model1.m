@@ -29,25 +29,25 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-tspan = [0 2500]; % in s
-T_t0_l = 273.15+100; %K 
-[t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
-T = y-273.15;
-subplot(2,2,[1,2])
-hold on
-plot(t, T, 'b','LineWidth',1.5)
-plot(t, 0*t+p.T_air-273.15, 'b--')
-axis([tspan 0 100])
-xlabel("Time (s)")
-ylabel(" T (C)")
-title("Solution over time")
-T(end)
-
+% tspan = [0 2500]; % in s
+% T_t0_l = 273.15+100; %K 
+% [t,y] = ode45(@(t,T) derivate(p,T), tspan, T_t0_l);
+% T = y-273.15;
+% subplot(2,2,[1,2])
+% hold on
+% plot(t, T, 'b','LineWidth',1.5)
+% plot(t, 0*t+p.T_air-273.15, 'b--')
+% axis([tspan 0 100])
+% xlabel("Time (s)")
+% ylabel(" T (C)")
+% title("Solution over time")
+% T(end)
+% 
 subplot(2,2,3)
 plot_side_temp(p,p.T_air, 273.15+100)
 subplot(2,2,4)
 plot_top_temp(p,p.T_air, 273.15+100)
-
+derivate(p,373)
 function dTdt = derivate(p,T_l)
 
     %T_out_cup = (T_l*R_glass^-1 + p.T_air*R_glass2air^-1) / (R_glass^-1 + R_glass2air^-1); 
@@ -67,7 +67,7 @@ function dTdt = derivate(p,T_l)
     q_l2glass = (T_l - T_in_cup)/R_l2glass;
 
 
-    dTdt = -1/(p.cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top + q_l2glass);
+    dTdt = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top + q_l2glass);
 end
 
 
