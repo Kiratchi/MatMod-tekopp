@@ -30,10 +30,10 @@ function R_h_l2cup = calc_h_l2cup(T_in_cup, T_l, C_L)
         Nu_L = 0.68 + 0.663*Ra_L^1/4/(1+(0.492/pr_water(T_film))^(9/16))^(4/9); % om Ra_L <= 10^8
 
     else 
-        %warning("Ra_L utanför correlationsintervall")
+        warning("Ra_L utanför correlationsintervall")
         Nu_L = 0.68 + 0.663*Ra_L^1/4/(1+(0.492/pr_water(T_film))^(9/16))^(4/9);
     end 
-    Ra_L
+    
     R_h_l2cup = (k_water(T_film) / C_L) * Nu_L;
 end 
 
