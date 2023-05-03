@@ -85,7 +85,8 @@ function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
 
     q_l2glass = (T_l - T_in_cup)/R_l2glass;
     q_glass = (T_out_cup - T_in_cup)/R_glass;
-    q_glass2air = (p.T_air - T_out_cup)/R_glass2air;
+    q_glass2air = (T_out_cup - p.T_air)/R_glass2air;
+    %q_glass2air = (-T_out_cup + p.T_air)/R_glass2air;
     q_rad_side = p.rad_glass_const*(T_out_cup^4-p.T_air^4);
 
     f = (q_rad_side + q_glass2air - q_glass)^2 + (q_l2glass - q_glass)^2;
