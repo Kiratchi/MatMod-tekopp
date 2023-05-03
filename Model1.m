@@ -5,7 +5,7 @@ clc, clear, clf
 
 % Physical dimensions
 p.r_inner = 7 *10^(-2); %m
-p.thickness_glass = 0.5; %m
+p.thickness_glass = 0.05; %m
 p.r_outer = p.r_inner + p.thickness_glass; %m
 p.height = 9.5*10^(-2); %m
 p.A_side_l= 2*pi*p.r_inner*p.height; %m^2
