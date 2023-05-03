@@ -17,6 +17,8 @@ p.volume_l = 250 *10^(-6); %m^3
 
 % Teperature properties
 p.T_air = 273.15+20.6; %K
+p.p_tot = 101325; % Pa
+p.RH = 0.22; % Relative humidity 
 
 % Radiation properies
 p.sftboltz_const = 6.676*10^-8; %W/m^2 K^4 (Fundamentals of Momentum, Heat and Mass Transfer)
