@@ -7,7 +7,7 @@ function R_h_l2air = calc_h_l2air(T_top,C_innerdiam)
 
 
     Pr_air = (my_air(T_air).*cp_air(T_air))./k_air(T_air);
-    Ra_L = g * Pr_air (T_top - T_air) *1/T_air * (C_innerdiam/4)^3 / ((ny_air^2));
+    Ra_L = g * Pr_air *(T_top - T_air) *1/T_air * (C_innerdiam/4)^3 / ((ny_air^2));
 
     if (Ra_L >= 10^7) && (Ra_L <= 10^11)
         Nu_L = 0.15 * Ra_L^(1/3);
