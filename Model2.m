@@ -4,8 +4,10 @@ clc, clear, clf
 warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
 
 % Physical properties
-p.M_water = 18.01528 % g/mol
-p.R = 8.314*1000 %g⋅m2⋅s−2⋅K−1⋅mol−1
+p.M_water = 18.01528 /1000 % kg/mol
+p.R = 8.314 %kg⋅m2⋅s−2⋅K−1⋅mol−1
+p.RH = 0.22;
+p.P_tot = 101325 %Pa
 
 % Physical dimensions
 p.r_inner = 7 *10^(-2); %m
@@ -32,10 +34,14 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 % Transfer coefficents
 p.k_glass = 0.9; %J/smK
 
-derivate(p,[273.15+80, 100])
+costfunc_top_flow(p,80+273.15,75+273.15);
+derivate(p,[273.15+80, 100]);
+t_finder_side(p,45+273.15);
 
-subplot(2,2,[1 2])
-plot_time_solution(p, 273.15+80, 125.81, [0 2500], true)
+% subplot(2,2,[1 2])
+plot_time_solution(p, 273.15+80, 125.81/1000, [0 158])
+% plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
+subplot(2,2,1)
 plot_small_data()
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
 subplot(2,2,3)
@@ -60,13 +66,10 @@ function dTMdt = derivate(p,TM_l)
     R_l2glass = (p.A_side_l*h_l2cup)^-1;
     q_l2glass = (T_l - T_in_cup)/R_l2glass;
     
-    k_c = calc_kc(T_top,p);
-    n_A = k_c * p.M_water/p.R/(p.T_air) *(p_water(T_top) - 0.22*p_water(p.T_air))
-    n_A = n_A / (1 - )
 
 
     dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top + q_l2glass);
-    dTMdt(2) = -p.A_top_l*n_A;
+    dTMdt(2) = -calc_n_A(T_top, p);
 end
 
 
@@ -82,8 +85,9 @@ function f = costfunc_top_flow(p,T_l, T_top)
     q_l2top = (T_l - T_top)/R_l2top;
     q_top2air = (T_top - p.T_air)/R_top2air;
     q_rad_top = p.rad_l_const*(T_top^4-p.T_air^4);
+    q_evap_top = calc_n_A(T_top,p)*dHvap_water(T_top);
 
-    f = (q_l2top - q_top2air - q_rad_top)^2;
+    f = (q_l2top - q_top2air - q_rad_top-q_evap_top)^2;
 end
 
 function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
@@ -107,6 +111,7 @@ end
 function [T_in_cup, T_out_cup] = t_finder_side(p,T_l)
     options = optimoptions('fmincon','Display', 'off');
     min_side = @(x) costfunc_side_flow(p,T_l, x(1), x(2));
+    %disp("T_l =" + (T_l-273.15))
     [x,f_val] = fmincon(min_side,[T_l-5, T_l-4],[],[],[],[],[T_l-60 T_l-60],[T_l+20 T_l+20],[],options);
     T_in_cup = x(1);
     T_out_cup= x(2);
@@ -155,21 +160,25 @@ ylabel("T_{top} (C)")
 title("Correlation T_l & top temp")
 end
 
-function plot_time_solution(p, T_t0_l, M_t0_t, t_span, Includelabels) 
+function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
     f = @(t,TM) derivate(p,TM)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
-    m = y(:,2)
+    m = y(:,2)*1000;
+    subplot(2,2,1)
     hold on
     plot(t, T,'LineWidth',1.5)
     %plot(t, 0*t+p.T_air-273.15, '--', 'Color', '#808080')
-    try
-    if Includelabels ~=  false
-        axis([t_span 0 100])
-        xlabel("Time (s)")
-        ylabel(" T (C)")
-        title("Solution over time")
-    end
-    end
+    axis([t_span 0 100])
+    title("Change of temperature")
+    xlabel("Time (s)")
+    ylabel("T (C)")
+    subplot(2,2,2)
+    plot(t,m,'LineWidth',1.5)
+    axis([t_span 0 M_t0_t*1.1*1000])
+    title("Change of mass")
+    xlabel("Time (s)")
+    ylabel("Mass (g)")
+
 end
 
