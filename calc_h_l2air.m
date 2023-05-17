@@ -16,7 +16,7 @@ function R_h_l2air = calc_h_l2air(T_top,C_innerdiam)
         Nu_L = 0.54 * Ra_L^(1/4);
         R_h_l2air = (k_air(T_film) / (C_innerdiam/4)) * Nu_L;
     elseif (290 <= Ra_L) && (Ra_L <= 3.3*10^5)
-        Nu_L = 0.78+0.82*Ra^(1/5); % källa: Martorell et al (2003) 
+        Nu_L = 0.78+0.82*Ra_L^(1/5); % källa: Martorell et al (2003) 
         R_h_l2air = (k_air(T_film) / (C_innerdiam/4)) * Nu_L;
     else
         %warning('the correlation does not  hold for the interval')
