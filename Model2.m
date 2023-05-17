@@ -18,7 +18,7 @@ p.A_side_l= 2*pi*p.r_inner*p.height; %m^2
 p.A_side_ln = 2*pi*p.height/log(p.r_inner/p.r_outer); %m^2
 p.A_side_glass = 2*pi*p.r_outer*p.height; %m^2
 p.A_top_l = pi*p.r_inner^2; %m^2
-p.volume_l = 250 *10^(-6); %m^3 
+p.volume_l = 250 *10^(-6); %m^3 %
 
 
 % Teperature properties
@@ -39,8 +39,8 @@ derivate(p,[273.15+80, 100]);
 t_finder_side(p,45+273.15);
 
 % subplot(2,2,[1 2])
-plot_time_solution(p, 273.15+80, 125.81/1000, [0 158])
-% plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
+%plot_time_solution(p, 273.15+80, 125.81/1000, [0 158])
+plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
 subplot(2,2,1)
 plot_small_data()
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
@@ -173,12 +173,15 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
     title("Change of temperature")
     xlabel("Time (s)")
     ylabel("T (C)")
+    %ylim([60 80])
     subplot(2,2,2)
     plot(t,m,'LineWidth',1.5)
     axis([t_span 0 M_t0_t*1.1*1000])
     title("Change of mass")
     xlabel("Time (s)")
     ylabel("Mass (g)")
+%     ylim([120 130])
+%     xlim([0 20])
 
 end
 
