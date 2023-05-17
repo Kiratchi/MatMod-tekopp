@@ -4,10 +4,10 @@ clc, clear, clf
 warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
 
 % Physical properties
-p.M_water = 18.01528 /1000 % kg/mol
-p.R = 8.314 %kg⋅m2⋅s−2⋅K−1⋅mol−1
+p.M_water = 18.01528 /1000; % kg/mol
+p.R = 8.314; %kg⋅m2⋅s−2⋅K−1⋅mol−1
 p.RH = 0.22;
-p.P_tot = 101325 %Pa
+p.P_tot = 101325; %Pa
 
 % Physical dimensions
 p.r_inner = 7 *10^(-2); %m
@@ -35,7 +35,7 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 costfunc_top_flow(p,80+273.15,75+273.15);
-derivate(p,[273.15+80, 100]);
+derivate(p,[273.15+80, 100],1);
 t_finder_side(p,45+273.15);
 
 % subplot(2,2,[1 2])
@@ -50,7 +50,10 @@ subplot(2,2,4)
 plot_top_temp(p,p.T_air+5, 273.15+100)
 
 
-function dTMdt = derivate(p,TM_l)
+
+
+comp=1;
+function dTMdt = derivate(p,TM_l,comp)
     T_l = TM_l(1);
     T_M = TM_l(2);
     [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
@@ -67,7 +70,29 @@ function dTMdt = derivate(p,TM_l)
 %     q_l2glass = (T_l - T_in_cup)/R_l2glass;
     
 
+if (comp==1)
 
+%     q_rad_side(T_out_cup,p)
+%     q_rad_top(T_top,p)
+%     q_evap_top(T_top,p)
+%     q_top2air(T_top,p)
+%     q_glass2air(T_out_cup,p)
+
+    q_values = [q_rad_side(T_out_cup,p), q_rad_top(T_top,p), q_evap_top(T_top,p), q_top2air(T_top,p), q_glass2air(T_out_cup,p)];
+    
+    
+
+    fileID = fopen('q_values.csv','a');
+        if ~exist('q_values.csv', 'file')
+            fprintf(fileID, '%s,%s,%s,%s,%s\n', 'q_rad_side', 'q_rad_top', 'q_evap_top', 'q_top2air', 'q_glass2air');
+        end
+
+    fprintf(fileID, '%f,%f,%f,%f,%f\n', q_values);
+
+    fclose(fileID);  
+
+
+end
     dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top(T_l,T_top,p) + q_l2glass(T_l,T_in_cup,p));
     dTMdt(2) = -calc_n_A(T_top, p);
 end
@@ -170,7 +195,7 @@ title("Correlation T_l & top temp")
 end
 
 function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
-    f = @(t,TM) derivate(p,TM)';
+    f = @(t,TM) derivate(p,TM,1)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
     m = y(:,2)*1000;
