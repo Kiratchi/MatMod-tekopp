@@ -3,7 +3,7 @@ function q_values_calc(T_out_cup, T_top, p)
     
     global t_current time_values;
     time_values = [time_values, t_current];
-    q_values = [q_rad_side(T_out_cup,p), q_rad_top(T_top,p), q_evap_top(T_top,p), q_top2air(T_top,p), q_glass2air(T_out_cup,p)];
+    q_values = [q_rad_side(T_out_cup,p), q_rad_top(T_top,p), q_evap_top(T_top,p,0.5), q_top2air(T_top,p,0.5), q_glass2air(T_out_cup,p,0.5)];
 
     fileID = fopen('q_values.csv','a');
     if ~exist('q_values.csv', 'file')
