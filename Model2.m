@@ -1,6 +1,9 @@
 %% Assumtions
 % Lumped liquid box with air film around
-clc, clear, clf
+clc, clear
+for i = 1:5
+    clf(figure(i))
+end
 warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
 
 
@@ -35,10 +38,21 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 % Transfer coefficents
 p.k_glass = 0.9; %J/smK
 
-plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
+plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
+plot_small_data()
+
 
 figure(1)
-plot_small_data()
+axis([0 2500 15 100])
+title("Change of temperature")
+xlabel("Time (s)")
+ylabel("T (C)")
+legend('Our solution','Exp 1','Exp 2', 'Exp 3', 'Room temp')
+
+figure(2)
+title("Change of mass")
+xlabel("Time (s)")
+ylabel("Mass (g)")
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
 
 figure(3)
@@ -93,9 +107,9 @@ end
 disp("Avrage diffrence between T_in_cup and T_l is:" + sum(T_l_vector-T_in_cup_vector)/length(T_l_vector))
 disp("Avrage diffrence between T_out_cup and T_l is:" + sum(T_l_vector-T_out_cup_vector)/length(T_l_vector))
 disp("Avrage diffrence between T_out_cup and T_in_cup is:" + sum(T_in_cup_vector-T_out_cup_vector)/length(T_in_cup_vector))
-plot(T_l_vector-273.15, T_in_cup_vector-273.15,'-b','linewidth', 1.5)
+plot(T_l_vector-273.15, T_in_cup_vector-273.15,'-','linewidth', 1.5)
 hold on 
-plot(T_l_vector-273.15, T_out_cup_vector-273.15,'-r','LineWidth',1.5)
+plot(T_l_vector-273.15, T_out_cup_vector-273.15,'--','LineWidth',1.5)
 xlabel("T_l (C)")
 ylabel("T_{cup} (C)")
 legend("Outside", "Inside")
@@ -111,10 +125,11 @@ for T_l = T_l_vector
     T_top_vector = [T_top_vector,T_top ];
 end
 disp("Avrage diffrence between T_top and T_l is: " + sum(T_l_vector-T_top_vector)/length(T_l_vector))
-plot(T_l_vector-273.15, T_top_vector-273.15,'-b','linewidth', 1.5)
+plot(T_l_vector-273.15, T_top_vector-273.15,'-','linewidth', 1.5)
 hold on 
 xlabel("T_l (C)")
 ylabel("T_{top} (C)")
+legend("Top")
 title("Correlation T_l & top temp")
 end
 
@@ -123,24 +138,14 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
     f = @(t,TM) derivate(p,TM)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
-    m = y(:,2)*1000;
+    m = y(:,2)*1000
+
     figure(1)
     hold on
-    plot(t, T,'LineWidth',2)
-    axis([t_span 0 100])
-    title("Change of temperature")
-    xlabel("Time (s)")
-    ylabel("T (C)")
-    %ylim([60 80])
+    plot(t, T,"black",'LineWidth',3)
 
     figure(2)
-    plot(t,m,'LineWidth',1.5)
-    axis([t_span 0 M_t0_t*1.1*1000])
-    title("Change of mass")
-    xlabel("Time (s)")
-    ylabel("Mass (g)")
-     ylim([110 130])
-%     xlim([0 20])
-
+     hold on
+    plot(t,m,"black",'LineWidth',3)
 end
 

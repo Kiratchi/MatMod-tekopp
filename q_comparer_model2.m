@@ -16,8 +16,7 @@ m = y(:,2)*1000;
 size(t);
 
 data = csvread('relq_values.csv', 1, 0); 
-size(data,1);
-for i = 2:size(data, 1.5)
+for i = 2:size(data, 2)
     plot(data(:, 1),data(:, i),'LineWidth',2);
     hold on;
 end

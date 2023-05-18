@@ -1,7 +1,10 @@
 %% Assumtions
 % Lumped liquid box with air film around
 % Assumes all water and glass have the same temperature.
-clc, clear, clf
+clc, clear
+for i = 1:5
+    clf(figure(i))
+end
 warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
 
 % Physical properties
@@ -36,53 +39,64 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-derivate(p,[273.15+80, 100]);
-
-
-% subplot(2,2,[1 2])
-%plot_time_solution(p, 273.15+80, 125.81/1000, [0 158])
-plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
-subplot(2,1,1)
+plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
 plot_small_data()
+
+
+figure(1)
+axis([0 2500 15 100])
+title("Change of temperature")
+xlabel("Time (s)")
+ylabel("T (C)")
+legend('Our solution','Exp 1','Exp 2', 'Exp 3', 'Room temp')
+
+figure(2)
+title("Change of mass")
+xlabel("Time (s)")
+ylabel("Mass (g)")
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
 
-figure
+figure(3)
 q_comparer_model2(p,1)
+
+% For ful model
+% saveas(figure(1),[pwd '/figures/T_over_t_m2'],'png')
+% saveas(figure(2),[pwd '/figures/m_over_t_m2'],'png')
+% saveas(figure(3),[pwd '/figures/q_compare_m2'],'png')
+
+
+% For reduced model
+saveas(figure(1),[pwd '/figures/T_over_t_m3'],'png')
+saveas(figure(2),[pwd '/figures/m_over_t_m3'],'png')
+saveas(figure(3),[pwd '/figures/q_compare_m3'],'png')
 
 
 function dTMdt = derivate(p,TM_l)
     T_l = TM_l(1);
     T_M = TM_l(2);
+
+    %For full model
     %dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_rad_side(T_l,p) + q_rad_top(T_l,p) + q_evap_top(T_l, p) + q_top2air(T_l,p) + q_glass2air(T_l,p) )
+    
+    %For reduced model
     dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_evap_top(T_l, p) + q_glass2air(T_l,p) )
     
 
     dTMdt(2) = -calc_n_A(T_l, p);
 end
 
-
 function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
     f = @(t,TM) derivate(p,TM)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
-    m = y(:,2)*1000;
-    subplot(2,1,1)
-    hold on
-    plot(t, T,'LineWidth',1.5)
-    %plot(t, 0*t+p.T_air-273.15, '--', 'Color', '#808080')
-    axis([t_span 0 100])
-    title("Change of temperature")
-    xlabel("Time (s)")
-    ylabel("T (C)")
-    %ylim([60 80])
-    subplot(2,1,2)
-    plot(t,m,'LineWidth',1.5)
-    axis([t_span 0 M_t0_t*1.1*1000])
-    title("Change of mass")
-    xlabel("Time (s)")
-    ylabel("Mass (g)")
-%     ylim([120 130])
-%     xlim([0 20])
+    m = y(:,2)*1000
 
+    figure(1)
+    hold on
+    plot(t, T,"black",'LineWidth',3)
+
+    figure(2)
+     hold on
+    plot(t,m,"black",'LineWidth',3)
 end
 
