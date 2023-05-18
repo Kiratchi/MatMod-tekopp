@@ -11,21 +11,19 @@ f = @(t,TM) derivate(p,TM,1,t)';
 t_current = t_span(1);
 options = odeset('OutputFcn', @odeplot, 'OutputSel', 1,'RelTol',1e-4,'AbsTol',1e-4);
 [t,y] = ode45(f, t_span, [T_t0_l M_t0_t], options);
+T = y(:,1)-273.15;
+m = y(:,2)*1000;
+size(t);
 
-
-
-    T = y(:,1)-273.15;
-    m = y(:,2)*1000;
-    size(t)
-    data = csvread('relq_values.csv', 1, 0); 
-    size(data,1)
-    for i = 2:size(data, 2)
-        plot(data(:, 1),data(:, i),'LineWidth',2);
-        hold on;
-    end
-    xlabel('Time');
-    ylabel('Contribution for all q terms');
-    legend('q-rad-side', 'q-rad-top', 'q-evap-top', 'q-top2air', 'q-glass2air');
+data = csvread('relq_values.csv', 1, 0); 
+size(data,1);
+for i = 2:size(data, 2)
+    plot(data(:, 1),data(:, i),'LineWidth',2);
+    hold on;
+end
+xlabel('Time');
+ylabel('Relative contribution of different q terms');
+legend('q-rad-side', 'q-rad-top', 'q-evap-top', 'q-top2air', 'q-glass2air');
 
 
 
