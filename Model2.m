@@ -50,7 +50,7 @@ subplot(2,2,4)
 plot_top_temp(p,p.T_air+5, 273.15+100)
 
 figure
-model_compuatation(p,1)
+q_comparer_model2(p,1)
 
 
 function dTMdt = derivate(p,TM_l)
