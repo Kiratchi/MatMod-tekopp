@@ -35,7 +35,7 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 costfunc_top_flow(p,80+273.15,75+273.15);
-derivate(p,[273.15+80, 100],1);
+derivate(p,[273.15+80, 100]);
 t_finder_side(p,45+273.15);
 
 % subplot(2,2,[1 2])
@@ -49,11 +49,13 @@ plot_side_temp(p,p.T_air+5, 273.15+100)
 subplot(2,2,4)
 plot_top_temp(p,p.T_air+5, 273.15+100)
 
+figure
+model_compuatation(p,1)
 
 
 
-comp=1;
-function dTMdt = derivate(p,TM_l,comp)
+
+function dTMdt = derivate(p,TM_l)
     T_l = TM_l(1);
     T_M = TM_l(2);
     [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
@@ -68,31 +70,9 @@ function dTMdt = derivate(p,TM_l,comp)
 %     h_l2cup = calc_h_l2cup(T_in_cup, T_l,C_L);
 %     R_l2glass = (p.A_side_l*h_l2cup)^-1;
 %     q_l2glass = (T_l - T_in_cup)/R_l2glass;
-    
 
-if (comp==1)
-
-%     q_rad_side(T_out_cup,p)
-%     q_rad_top(T_top,p)
-%     q_evap_top(T_top,p)
-%     q_top2air(T_top,p)
-%     q_glass2air(T_out_cup,p)
-
-    q_values = [q_rad_side(T_out_cup,p), q_rad_top(T_top,p), q_evap_top(T_top,p), q_top2air(T_top,p), q_glass2air(T_out_cup,p)];
     
     
-
-    fileID = fopen('q_values.csv','a');
-        if ~exist('q_values.csv', 'file')
-            fprintf(fileID, '%s,%s,%s,%s,%s\n', 'q_rad_side', 'q_rad_top', 'q_evap_top', 'q_top2air', 'q_glass2air');
-        end
-
-    fprintf(fileID, '%f,%f,%f,%f,%f\n', q_values);
-
-    fclose(fileID);  
-
-
-end
     dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top(T_l,T_top,p) + q_l2glass(T_l,T_in_cup,p));
     dTMdt(2) = -calc_n_A(T_top, p);
 end
@@ -195,7 +175,8 @@ title("Correlation T_l & top temp")
 end
 
 function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
-    f = @(t,TM) derivate(p,TM,1)';
+
+    f = @(t,TM) derivate(p,TM)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
     m = y(:,2)*1000;
