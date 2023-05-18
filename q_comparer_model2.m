@@ -17,13 +17,14 @@ size(t);
 
 data = csvread('relq_values.csv', 1, 0); 
 size(data,1);
-for i = 2:size(data, 2)
+for i = 2:size(data, 1.5)
     plot(data(:, 1),data(:, i),'LineWidth',2);
     hold on;
 end
-xlabel('Time');
+xlabel('Time (s)');
 ylabel('Relative contribution of different q terms');
 legend('q-rad-side', 'q-rad-top', 'q-evap-top', 'q-top2air', 'q-glass2air');
+title("Relative comparison of heat transferes")
 
 
 

@@ -3,6 +3,7 @@
 clc, clear, clf
 warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
 
+
 % Physical properties
 p.M_water = 18.01528 /1000; % kg/mol
 p.R = 8.314; %kg⋅m2⋅s−2⋅K−1⋅mol−1
@@ -34,11 +35,6 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 % Transfer coefficents
 p.k_glass = 0.9; %J/smK
 
-
-derivate(p,[273.15+80, 100]);
-t_finder_side(p,45+273.15);
-
-
 plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
 
 figure(1)
@@ -54,7 +50,11 @@ plot_side_temp(p,p.T_air+5, 273.15+100)
 figure(5)
 plot_top_temp(p,p.T_air+5, 273.15+100)
 
-
+saveas(figure(1),[pwd '/figures/T_over_t_m1'],'png')
+saveas(figure(2),[pwd '/figures/m_over_t_m1'],'png')
+saveas(figure(3),[pwd '/figures/q_compare_m1'],'png')
+saveas(figure(4),[pwd '/figures/side_effect_m1'],'png')
+saveas(figure(5),[pwd '/figures/top_effect_m1'],'png')
 
 function dTMdt = derivate(p,TM_l)
     T_l = TM_l(1);
@@ -126,7 +126,7 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
     m = y(:,2)*1000;
     figure(1)
     hold on
-    plot(t, T,'LineWidth',1.5)
+    plot(t, T,'LineWidth',2)
     axis([t_span 0 100])
     title("Change of temperature")
     xlabel("Time (s)")
@@ -139,7 +139,7 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
     title("Change of mass")
     xlabel("Time (s)")
     ylabel("Mass (g)")
-%     ylim([120 130])
+     ylim([110 130])
 %     xlim([0 20])
 
 end
