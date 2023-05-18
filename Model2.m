@@ -34,7 +34,7 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 % Transfer coefficents
 p.k_glass = 0.9; %J/smK
 
-costfunc_top_flow(p,80+273.15,75+273.15);
+
 derivate(p,[273.15+80, 100]);
 t_finder_side(p,45+273.15);
 
@@ -53,79 +53,20 @@ figure
 model_compuatation(p,1)
 
 
-
-
 function dTMdt = derivate(p,TM_l)
     T_l = TM_l(1);
     T_M = TM_l(2);
     [T_in_cup, T_out_cup] = t_finder_side(p, T_l);
     T_top = t_finder_top(p, T_l);    
-
-%     C_innerdiam = 2*p.r_inner; % Charateristic diameter 
-%     h_l2top = calc_h_l2top(T_top,T_l,C_innerdiam);
-%     R_l2top = (p.A_side_l*h_l2top)^-1;
-%     q_l2top = (T_l - T_top)/R_l2top;
-
-%     C_L = p.height; % Charecteristic length
-%     h_l2cup = calc_h_l2cup(T_in_cup, T_l,C_L);
-%     R_l2glass = (p.A_side_l*h_l2cup)^-1;
-%     q_l2glass = (T_l - T_in_cup)/R_l2glass;
-
-    
-    
+  
     dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top(T_l,T_top,p) + q_l2glass(T_l,T_in_cup,p));
     dTMdt(2) = -calc_n_A(T_top, p);
 end
 
 
-function f = costfunc_top_flow(p,T_l, T_top)
-%     C_innerdiam = 2*p.r_inner; % Charateristic diameter 
-%     h_l2air = calc_h_l2air(T_top,C_innerdiam);
-    
-%     h_l2top = calc_h_l2top(T_top, T_l, C_innerdiam);
-
-%     R_l2top = (p.A_side_l*h_l2top)^-1;
-%     R_top2air = (p.A_top_l*h_l2air)^-1;
-    
-%     q_l2top = (T_l - T_top)/R_l2top;
-%     q_top2air = (T_top - p.T_air)/R_top2air;
-%     q_rad_top = p.rad_l_const*(T_top^4-p.T_air^4);
-%     q_evap_top = calc_n_A(T_top,p)*dHvap_water(T_top);
-% 
-%     % Open the file in append mode
-%     fileID = fopen('q_contribution.csv','a');
-% 
-%     % Write the q values to the file
-%     fprintf(fileID, '%f,%f,%f,%f\n', q_l2top, q_top2air, q_rad_top, q_evap_top);
-% 
-%     % Close the file
-%     fclose(fileID);
-% 
-    f = (q_l2top(T_l,T_top,p) - q_top2air(T_top,p) - q_rad_top(T_top,p)-q_evap_top(T_top,p))^2;
-end
-
-function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
-%     C_L = p.height; % karaktäristisk längd 
-%     h_l2cup = calc_h_l2cup(T_in_cup, T_l,C_L);
-
-%     h_cup2air = calc_h_cup2air(T_out_cup, C_L);
-    
-%     R_l2glass = (p.A_side_l*h_l2cup)^-1;
-%     R_glass =  p.thickness_glass/p.A_side_ln*p.k_glass;
-%     R_glass2air = (p.A_side_glass*h_cup2air)^-1;
-
-%     q_l2glass = (T_l - T_in_cup)/R_l2glass;
-%     q_glass = (T_out_cup - T_in_cup)/R_glass;
-%     q_glass2air = (T_out_cup - p.T_air)/R_glass2air;
-%     q_rad_side = p.rad_glass_const*(T_out_cup^4-p.T_air^4);
-
-    f = (q_rad_side(T_out_cup,p) + q_glass2air(T_out_cup,p) - q_glass(T_out_cup,T_in_cup,p))^2 + (q_l2glass(T_l,T_in_cup,p) - q_glass(T_out_cup,T_in_cup,p))^2;
-end
-
 function [T_in_cup, T_out_cup] = t_finder_side(p,T_l)
     options = optimoptions('fmincon','Display', 'off');
-    min_side = @(x) costfunc_side_flow(p,T_l, x(1), x(2));
-    %disp("T_l =" + (T_l-273.15))
+    min_side = @(x) (q_rad_side(x(2),p) + q_glass2air(x(2),p) - q_glass(x(2),x(1),p))^2 + (q_l2glass(T_l,x(1),p) - q_glass(x(2),x(1),p))^2;
     [x,f_val] = fmincon(min_side,[T_l-5, T_l-4],[],[],[],[],[T_l-60 T_l-60],[T_l+20 T_l+20],[],options);
     T_in_cup = x(1);
     T_out_cup= x(2);
@@ -133,7 +74,7 @@ end
 
 function T_top = t_finder_top(p,T_l)
     options = optimoptions('fmincon','Display', 'off');
-    min_top = @(x) costfunc_top_flow(p,T_l, x);
+    min_top = @(x) (q_l2top(T_l,x,p) - q_top2air(x,p) - q_rad_top(x,p)-q_evap_top(x,p))^2;
     T_top = fmincon(min_top,T_l-5,[],[],[],[],273.15+20.6,273.15+100, [],options);
 end
 
