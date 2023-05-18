@@ -46,8 +46,8 @@ subplot(2,1,1)
 plot_small_data()
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
 
-%figure
-%model_compuatation(p,1)
+figure
+q_comparer_model2(p,1)
 
 
 function dTMdt = derivate(p,TM_l)

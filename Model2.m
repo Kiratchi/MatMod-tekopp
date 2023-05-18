@@ -38,19 +38,22 @@ p.k_glass = 0.9; %J/smK
 derivate(p,[273.15+80, 100]);
 t_finder_side(p,45+273.15);
 
-% subplot(2,2,[1 2])
-%plot_time_solution(p, 273.15+80, 125.81/1000, [0 158])
+
 plot_time_solution(p, 273.15+80, 125.81/1000, [0 2500])
-subplot(2,2,1)
+
+figure(1)
 plot_small_data()
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
-subplot(2,2,3)
+
+figure(3)
+q_comparer_model2(p,1)
+
+figure(4)
 plot_side_temp(p,p.T_air+5, 273.15+100)
-subplot(2,2,4)
+
+figure(5)
 plot_top_temp(p,p.T_air+5, 273.15+100)
 
-figure
-q_comparer_model2(p,1)
 
 
 function dTMdt = derivate(p,TM_l)
@@ -121,16 +124,16 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
     m = y(:,2)*1000;
-    subplot(2,2,1)
+    figure(1)
     hold on
     plot(t, T,'LineWidth',1.5)
-    %plot(t, 0*t+p.T_air-273.15, '--', 'Color', '#808080')
     axis([t_span 0 100])
     title("Change of temperature")
     xlabel("Time (s)")
     ylabel("T (C)")
     %ylim([60 80])
-    subplot(2,2,2)
+
+    figure(2)
     plot(t,m,'LineWidth',1.5)
     axis([t_span 0 M_t0_t*1.1*1000])
     title("Change of mass")

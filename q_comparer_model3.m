@@ -1,4 +1,4 @@
-function q_comparer_model2(p,comp)
+function q_comparer_model3(p,comp)
 global time_values;
 global t_current
 time_values = [];
