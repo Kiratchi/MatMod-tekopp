@@ -40,25 +40,30 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
-plot_small_data()
+parameter_estimation(p, 1)
+% sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], [0.1 0.9])
+
+% plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
+% plot_small_data()
 
 
-figure(1)
-axis([0 2500 15 100])
-title("Change of temperature")
-xlabel("Time (s)")
-ylabel("T (C)")
-legend('Our solution','Exp 1','Exp 2', 'Exp 3', 'Room temp')
+% figure(1)
+% axis([0 2500 15 100])
+% title("Change of temperature")
+% xlabel("Time (s)")
+% ylabel("T (C)")
+% legend('Our solution','Exp 1','Exp 2', 'Exp 3', 'Room temp')
+% 
+% figure(2)
+% title("Change of mass")
+% xlabel("Time (s)")
+% ylabel("Mass (g)")
+% legend('Our solution','Exp 1','Exp 2', 'Exp 3')
+% 
+% figure(3)
+% q_comparer_model3(p,1)
 
-figure(2)
-title("Change of mass")
-xlabel("Time (s)")
-ylabel("Mass (g)")
-legend('Our solution','Exp 1','Exp 2', 'Exp 3')
 
-figure(3)
-q_comparer_model3(p,1)
 
 % For ful model
 % saveas(figure(1),[pwd '/figures/T_over_t_m2'],'png')
@@ -67,12 +72,12 @@ q_comparer_model3(p,1)
 
 
 % For reduced model
-saveas(figure(1),[pwd '/figures/T_over_t_m3'],'png')
-saveas(figure(2),[pwd '/figures/m_over_t_m3'],'png')
-saveas(figure(3),[pwd '/figures/q_compare_m3'],'png')
+% saveas(figure(1),[pwd '/figures/T_over_t_m4'],'png')
+% saveas(figure(2),[pwd '/figures/m_over_t_m4'],'png')
+% saveas(figure(3),[pwd '/figures/q_compare_m4'],'png')
 
 
-function dTMdt = derivate(p,TM_l,film_frac_side, film_frac_top)
+function dTMdt = derivate(p,TM_l,film_frac_side,film_frac_top)
     T_l = TM_l(1);
     T_M = TM_l(2);
 
@@ -80,17 +85,17 @@ function dTMdt = derivate(p,TM_l,film_frac_side, film_frac_top)
     %dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_rad_side(T_l,p) + q_rad_top(T_l,p) + q_evap_top(T_l, p,film_frac_top) + q_top2air(T_l,p,film_frac_top) + q_glass2air(T_l,p,film_frac_side) )
     
     %For reduced model
-    dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_evap_top(T_l, p,film_frac_top) + q_glass2air(T_l,p,film_frac_side) );
+    dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_rad_side(T_l,p) + q_rad_top(T_l,p) + q_evap_top(T_l, p,film_frac_top) + q_glass2air(T_l,p,film_frac_side) );
     
 
-    dTMdt(2) = -calc_n_A(T_l, p,0.5);
+    dTMdt(2) = -calc_n_A(T_l, p,film_frac_top);
 end
 
 function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
     f = @(t,TM) derivate(p,TM,0.5,0.5)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
-    m = y(:,2)*1000
+    m = y(:,2)*1000;
 
     figure(1)
     hold on
@@ -102,17 +107,59 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
 end
 
 function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span_side, span_top) 
+    light = [247, 241, 59]/255;
+    dark = [59, 4, 51]/255;
+    gradient = @(frac) light*frac + dark*(1-frac);
 
-    f = @(t,TM) derivate(p,TM,0.5,0.5)';
+    f = @(t,TM) derivate(p,TM,0.5, 0.5)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
-    m = y(:,2)*1000
+    m = y(:,2)*1000;
 
     figure(4)
     hold on
-    plot(t, T,"black",'LineWidth',3)
+    plot(t, T,'LineWidth',3,'color', 'black')
 
     figure(5)
-     hold on
-    plot(t,m,"black",'LineWidth',3)
+    hold on
+    plot(t,m,'LineWidth',3,'color', 'black')
+    
+    for film_frac_side = linspace(span_side(1), span_side(2),20)
+    f = @(t,TM) derivate(p,TM,0.5, film_frac_side)';
+    [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
+    T = y(:,1)-273.15;
+    m = y(:,2)*1000;
+
+    figure(4)
+    hold on
+    plot(t, T,'LineWidth',0.7,'color',gradient(film_frac_side))
+
+    figure(5)
+    hold on
+    plot(t,m,'LineWidth',0.7,'color',gradient(film_frac_side))
+    end
+end
+
+function cost = param_costfunc(p, film_frac_top, data)
+    cost = 0;
+    for i = 1:3
+        f = @(t,TM) derivate(p,TM,0.5, film_frac_top)';
+        sol = ode45(f, [0 2500], [data{i}.T(1)+273.15 data{i}.m(1)/1000]);
+        for j = 1:length(data{i}.t)
+            y =  deval(sol,data{i}.t(j));
+            T = y(1);
+            m = y(2)*1000;
+            cost = cost + (T-data{i}.T(j)-273.15)^2;
+            %cost = cost + (m-data{i}.m(j))^2;
+        end
+    end
+end
+
+function par_est = parameter_estimation(p, par_span)
+    data{1} = read_data('small_beaker_1.txt');
+    data{2} = read_data('small_beaker_2.txt');
+    data{3} = read_data('small_beaker_3.txt');
+
+    f = @(x) param_costfunc(p,x,data);
+    par_est = fminbnd(f,0.1,0.9);
 end
