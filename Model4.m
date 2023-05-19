@@ -40,16 +40,10 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-film_frac_top = parameter_estimation(p, 1)
-plot_time_solution(p, 273.15+80, 150/1000, [0 2500], film_frac_top)
-plot_small_data()
-
-% sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac top")
-
-% plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
+% film_frac_top = parameter_estimation(p, 1)
+% plot_time_solution(p, 273.15+80, 150/1000, [0 2500], film_frac_top)
+% plot_small_data()
 % 
-
-
 % figure(1)
 % axis([0 2500 15 100])
 % title("Change of temperature")
@@ -62,26 +56,36 @@ plot_small_data()
 % xlabel("Time (s)")
 % ylabel("Mass (g)")
 % legend('Our solution','Exp 1','Exp 2', 'Exp 3')
-% 
-% figure(3)
-% q_comparer_model3(p,1)
+
+% For best optim
+% saveas(figure(1),[pwd '/figures/T_over_t_optimized'],'png')
+% saveas(figure(2),[pwd '/figures/m_over_t_optimized'],'png')
+
+% For T optim
+% saveas(figure(1),[pwd '/figures/T_over_t_optimT'],'png')
+% saveas(figure(2),[pwd '/figures/m_over_t_optimT'],'png')
+
+% For m optim
+% saveas(figure(1),[pwd '/figures/T_over_t_optimm'],'png')
+% saveas(figure(2),[pwd '/figures/m_over_t_optimm'],'png')
+
 
 % For side
 % sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac side")
 % saveas(figure(4),[pwd '/figures/sensitivity_T_side'],'png')
 % saveas(figure(5),[pwd '/figures/sensitivity_m_side'],'png')
-% 
-% % For top
+
+
+% For top
 % clf(figure(4))
 % clf(figure(5))
 % sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac top")
 % saveas(figure(4),[pwd '/figures/sensitivity_T_top'],'png')
 % saveas(figure(5),[pwd '/figures/sensitivity_m_top'],'png')
 
-% F
-% saveas(figure(1),[pwd '/figures/T_over_t_m4'],'png')
-% saveas(figure(2),[pwd '/figures/m_over_t_m4'],'png')
-% saveas(figure(3),[pwd '/figures/q_compare_m4'],'png')
+
+% Emistivitiy
+sens_an_emissitivity(p, 273.15+80, 150/1000, [0 2500], [0.1 0.99])
 
 
 function dTMdt = derivate(p,TM_l,film_frac_side,film_frac_top)
@@ -165,6 +169,45 @@ function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span, type)
     ylabel("Mass (g)")
 end
 
+function sens_an_emissitivity(p, T_t0_l, M_t0_t, t_span, span) 
+    light = [247, 241, 59]/255;
+    dark = [59, 4, 51]/255;
+    gradient = @(frac) light*frac + dark*(1-frac);
+
+    p.emissitivity_glass = 0.94;
+    f = @(t,TM) derivate(p,TM,0.5, 0.5970)';
+    [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
+    T = y(:,1)-273.15;
+    m = y(:,2)*1000;
+
+    figure(4)
+    hold on
+    plot(t, T,'LineWidth',3,'color', 'black')
+
+    figure(5)
+    hold on
+    plot(t,m,'LineWidth',3,'color', 'black')
+    
+    for emmisitivity = linspace(span(1), span(2),20)
+        disp(emmisitivity)
+        p.emissitivity_glass = emmisitivity;
+        f = @(t,TM) derivate(p,TM,0.5, 0.5970)';
+        [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
+        T = y(:,1)-273.15;
+        m = y(:,2)*1000;
+
+        figure(3)
+        hold on
+        plot(t, T,'LineWidth',0.7,'color',gradient(emmisitivity))
+
+    end
+    figure(3)
+    title("Effect on temperature of changing Emissitivity of glass")
+    xlabel("Time (s)")
+    ylabel("Temperature (C)")
+
+end
+
 function cost = param_costfunc(p, film_frac_top, data)
     cost = 0;
     for i = 1:3
@@ -175,10 +218,10 @@ function cost = param_costfunc(p, film_frac_top, data)
             T = y(1);
             m = y(2)*1000;
             % Only T
-            %cost = cost + (T-data{i}.T(j)-273.15)^2;
+%             cost = cost + (T-data{i}.T(j)-273.15)^2;
 
             %Only m
-            %cost = cost + (m-data{i}.m(j))^2;
+%             cost = cost + (m-data{i}.m(j))^2;
             
             % Both
             cost = cost + ((T-data{i}.T(j)-273.15 )/(max(data{i}.T)-min(data{i}.T)))^2;
