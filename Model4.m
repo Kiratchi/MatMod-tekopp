@@ -40,8 +40,8 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-parameter_estimation(p, 1)
-% sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], [0.1 0.9])
+% parameter_estimation(p, 1)
+sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac side")
 
 % plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
 % plot_small_data()
@@ -63,15 +63,19 @@ parameter_estimation(p, 1)
 % figure(3)
 % q_comparer_model3(p,1)
 
+% For side
+sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac side")
+saveas(figure(4),[pwd '/figures/sensitivity_T_side'],'png')
+saveas(figure(5),[pwd '/figures/sensitivity_m_side'],'png')
 
+% For top
+clf(figure(4))
+clf(figure(5))
+sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac top")
+saveas(figure(4),[pwd '/figures/sensitivity_T_top'],'png')
+saveas(figure(5),[pwd '/figures/sensitivity_m_top'],'png')
 
-% For ful model
-% saveas(figure(1),[pwd '/figures/T_over_t_m2'],'png')
-% saveas(figure(2),[pwd '/figures/m_over_t_m2'],'png')
-% saveas(figure(3),[pwd '/figures/q_compare_m2'],'png')
-
-
-% For reduced model
+% F
 % saveas(figure(1),[pwd '/figures/T_over_t_m4'],'png')
 % saveas(figure(2),[pwd '/figures/m_over_t_m4'],'png')
 % saveas(figure(3),[pwd '/figures/q_compare_m4'],'png')
@@ -106,11 +110,13 @@ function plot_time_solution(p, T_t0_l, M_t0_t, t_span)
     plot(t,m,"black",'LineWidth',3)
 end
 
-function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span_side, span_top) 
+function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span, type) 
+    disp(type)
     light = [247, 241, 59]/255;
     dark = [59, 4, 51]/255;
     gradient = @(frac) light*frac + dark*(1-frac);
 
+    
     f = @(t,TM) derivate(p,TM,0.5, 0.5)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
@@ -124,20 +130,33 @@ function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span_side, span_top)
     hold on
     plot(t,m,'LineWidth',3,'color', 'black')
     
-    for film_frac_side = linspace(span_side(1), span_side(2),20)
-    f = @(t,TM) derivate(p,TM,0.5, film_frac_side)';
-    [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
-    T = y(:,1)-273.15;
-    m = y(:,2)*1000;
+    for film_frac = linspace(span(1), span(2),20)
+        if type =="film frac top"
+            f = @(t,TM) derivate(p,TM,0.5, film_frac)';
+        elseif type == "film frac side"
+            f = @(t,TM) derivate(p,TM, film_frac,0.5)';
+        end
+        [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
+        T = y(:,1)-273.15;
+        m = y(:,2)*1000;
 
+        figure(4)
+        hold on
+        plot(t, T,'LineWidth',0.7,'color',gradient(film_frac))
+
+        figure(5)
+        hold on
+        plot(t,m,'LineWidth',0.7,'color',gradient(film_frac))
+    end
     figure(4)
-    hold on
-    plot(t, T,'LineWidth',0.7,'color',gradient(film_frac_side))
+    title("Effect on temperature of changing " + type)
+    xlabel("Time (s)")
+    ylabel("Temperature (C)")
 
     figure(5)
-    hold on
-    plot(t,m,'LineWidth',0.7,'color',gradient(film_frac_side))
-    end
+    title("Effect on temperature of changing " + type)
+    xlabel("Time (s)")
+    ylabel("Mass (g)")
 end
 
 function cost = param_costfunc(p, film_frac_top, data)
