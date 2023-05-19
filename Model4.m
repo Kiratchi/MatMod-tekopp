@@ -40,11 +40,14 @@ p.rad_l_const= p.A_top_l*p.emissitivity_l*p.sftboltz_const;
 p.k_glass = 0.9; %J/smK
 
 
-% parameter_estimation(p, 1)
-sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac side")
+film_frac_top = parameter_estimation(p, 1)
+plot_time_solution(p, 273.15+80, 150/1000, [0 2500], film_frac_top)
+plot_small_data()
+
+% sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac top")
 
 % plot_time_solution(p, 273.15+80, 150/1000, [0 2500])
-% plot_small_data()
+% 
 
 
 % figure(1)
@@ -64,16 +67,16 @@ sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac sid
 % q_comparer_model3(p,1)
 
 % For side
-sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac side")
-saveas(figure(4),[pwd '/figures/sensitivity_T_side'],'png')
-saveas(figure(5),[pwd '/figures/sensitivity_m_side'],'png')
-
-% For top
-clf(figure(4))
-clf(figure(5))
-sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac top")
-saveas(figure(4),[pwd '/figures/sensitivity_T_top'],'png')
-saveas(figure(5),[pwd '/figures/sensitivity_m_top'],'png')
+% sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac side")
+% saveas(figure(4),[pwd '/figures/sensitivity_T_side'],'png')
+% saveas(figure(5),[pwd '/figures/sensitivity_m_side'],'png')
+% 
+% % For top
+% clf(figure(4))
+% clf(figure(5))
+% sensitivity_analysis(p, 273.15+80, 150/1000, [0 2500], [0.1 0.9], "film frac top")
+% saveas(figure(4),[pwd '/figures/sensitivity_T_top'],'png')
+% saveas(figure(5),[pwd '/figures/sensitivity_m_top'],'png')
 
 % F
 % saveas(figure(1),[pwd '/figures/T_over_t_m4'],'png')
@@ -95,8 +98,8 @@ function dTMdt = derivate(p,TM_l,film_frac_side,film_frac_top)
     dTMdt(2) = -calc_n_A(T_l, p,film_frac_top);
 end
 
-function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
-    f = @(t,TM) derivate(p,TM,0.5,0.5)';
+function plot_time_solution(p, T_t0_l, M_t0_t, t_span, film_frac_top) 
+    f = @(t,TM) derivate(p,TM, 0.5, film_frac_top)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
     m = y(:,2)*1000;
@@ -147,6 +150,9 @@ function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span, type)
         figure(5)
         hold on
         plot(t,m,'LineWidth',0.7,'color',gradient(film_frac))
+        if film_frac == span(1) | film_frac == span(2)
+            disp("T =" +  num2str(T(end)) + "  M =" +  num2str(m(end)))
+        end
     end
     figure(4)
     title("Effect on temperature of changing " + type)
@@ -154,7 +160,7 @@ function sensitivity_analysis(p, T_t0_l, M_t0_t, t_span, span, type)
     ylabel("Temperature (C)")
 
     figure(5)
-    title("Effect on temperature of changing " + type)
+    title("Effect on mass of changing " + type)
     xlabel("Time (s)")
     ylabel("Mass (g)")
 end
@@ -168,8 +174,16 @@ function cost = param_costfunc(p, film_frac_top, data)
             y =  deval(sol,data{i}.t(j));
             T = y(1);
             m = y(2)*1000;
-            cost = cost + (T-data{i}.T(j)-273.15)^2;
+            % Only T
+            %cost = cost + (T-data{i}.T(j)-273.15)^2;
+
+            %Only m
             %cost = cost + (m-data{i}.m(j))^2;
+            
+            % Both
+            cost = cost + ((T-data{i}.T(j)-273.15 )/(max(data{i}.T)-min(data{i}.T)))^2;
+            cost = cost + ((m-data{i}.m(j) )/(max(data{i}.m)-min(data{i}.m)))^2;
+
         end
     end
 end

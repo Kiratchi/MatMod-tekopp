@@ -57,7 +57,8 @@ ylabel("Mass (g)")
 legend('Our solution','Exp 1','Exp 2', 'Exp 3')
 
 figure(3)
-q_comparer_model2(p,1)
+%q_comparer_model3(p,1)  %Full
+q_comparer_model3_reduced(p,1) %Reduced
 
 % For ful model
 % saveas(figure(1),[pwd '/figures/T_over_t_m2'],'png')
@@ -76,20 +77,20 @@ function dTMdt = derivate(p,TM_l)
     T_M = TM_l(2);
 
     %For full model
-    %dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_rad_side(T_l,p) + q_rad_top(T_l,p) + q_evap_top(T_l, p) + q_top2air(T_l,p) + q_glass2air(T_l,p) )
+    %dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_rad_side(T_l,p) + q_rad_top(T_l,p) + q_evap_top(T_l, p,0.5) + q_top2air(T_l,p,0.5) + q_glass2air(T_l,p,0.5) );
     
     %For reduced model
-    dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_evap_top(T_l, p) + q_glass2air(T_l,p) )
+    dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_evap_top(T_l, p,0.5) + q_glass2air(T_l,p,0.5) )
     
 
-    dTMdt(2) = -calc_n_A(T_l, p);
+    dTMdt(2) = -calc_n_A(T_l, p,0.5);
 end
 
 function plot_time_solution(p, T_t0_l, M_t0_t, t_span) 
     f = @(t,TM) derivate(p,TM)';
     [t,y] = ode45(f, t_span, [T_t0_l M_t0_t]);
     T = y(:,1)-273.15;
-    m = y(:,2)*1000
+    m = y(:,2)*1000;
 
     figure(1)
     hold on

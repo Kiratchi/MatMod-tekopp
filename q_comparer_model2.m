@@ -45,7 +45,7 @@ function dTMdt = derivate(p, TM_l, comp,t)
     T_top = t_finder_top(p, T_l);
 
     dTMdt(1) = -1/(cp_water(T_l)*rho_water(T_l)*p.volume_l)*(q_l2top(T_l,T_top,p) + q_l2glass(T_l,T_in_cup,p));
-    dTMdt(2) = -calc_n_A(T_top, p);
+    dTMdt(2) = -calc_n_A(T_top, p,0.5);
     if (comp==1)
        
         time_values = [time_values, t_current];
@@ -72,12 +72,12 @@ end
 
 function f = costfunc_top_flow(p,T_l, T_top)
 
-    f = (q_l2top(T_l,T_top,p) - q_top2air(T_top,p) - q_rad_top(T_top,p)-q_evap_top(T_top,p))^2;
+    f = (q_l2top(T_l,T_top,p) - q_top2air(T_top,p,0.5) - q_rad_top(T_top,p)-q_evap_top(T_top,p, 0.5))^2;
 end
 
 function f = costfunc_side_flow(p,T_l, T_in_cup, T_out_cup)
 
 
-    f = (q_rad_side(T_out_cup,p) + q_glass2air(T_out_cup,p) - q_glass(T_out_cup,T_in_cup,p))^2 + (q_l2glass(T_l,T_in_cup,p) - q_glass(T_out_cup,T_in_cup,p))^2;
+    f = (q_rad_side(T_out_cup,p) + q_glass2air(T_out_cup,p,0.5) - q_glass(T_out_cup,T_in_cup,p))^2 + (q_l2glass(T_l,T_in_cup,p) - q_glass(T_out_cup,T_in_cup,p))^2;
 end
 end

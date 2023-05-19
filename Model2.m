@@ -64,11 +64,11 @@ plot_side_temp(p,p.T_air+5, 273.15+100)
 figure(5)
 plot_top_temp(p,p.T_air+5, 273.15+100)
 
-saveas(figure(1),[pwd '/figures/T_over_t_m1'],'png')
-saveas(figure(2),[pwd '/figures/m_over_t_m1'],'png')
-saveas(figure(3),[pwd '/figures/q_compare_m1'],'png')
-saveas(figure(4),[pwd '/figures/side_effect_m1'],'png')
-saveas(figure(5),[pwd '/figures/top_effect_m1'],'png')
+% saveas(figure(1),[pwd '/figures/T_over_t_m1'],'png')
+% saveas(figure(2),[pwd '/figures/m_over_t_m1'],'png')
+% saveas(figure(3),[pwd '/figures/q_compare_m1'],'png')
+% saveas(figure(4),[pwd '/figures/side_effect_m1'],'png')
+% saveas(figure(5),[pwd '/figures/top_effect_m1'],'png')
 
 function dTMdt = derivate(p,TM_l)
     T_l = TM_l(1);
